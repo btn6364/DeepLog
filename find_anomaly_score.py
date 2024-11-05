@@ -86,6 +86,7 @@ if __name__ == '__main__':
             anomaly_score = round(num_abnormal_sequences / num_sequences, 2)
             microservice_anomaly_scores.append(anomaly_score)
     
+    print(microservice_anomaly_scores)
     microservice_mean_anomaly_score = round(statistics.mean(microservice_anomaly_scores), 3)
     print(f"Microservice Anomaly Score = {microservice_mean_anomaly_score}")
 
