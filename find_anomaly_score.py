@@ -59,8 +59,7 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(model_path))
     model.eval()
     print('model_path: {}'.format(model_path))
-    test_normal_loader = generate('hdfs_test_normal')
-    test_abnormal_loader = generate('hdfs_test_abnormal')
+    test_abnormal_loader = generate('hdfs_logs')
     # Test the model
     start_time = time.time()
     with torch.no_grad():
