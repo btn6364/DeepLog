@@ -6,7 +6,7 @@ import pandas as pd
 from collections import defaultdict
 
 
-def generate_sequence_data(log_file, template_file):
+def generate_sequence_data(log_file, template_file, destination_file):
     templates = pd.read_csv(template_file)
     event_id_map = {}
     for i, row in templates.iterrows():
@@ -22,7 +22,7 @@ def generate_sequence_data(log_file, template_file):
         key = generate_key(date, time)
         log_map[key].append(event_id_encoded)
     
-    with open("./data/hdfs_logs", "w") as text_file:
+    with open(destination_file, "w") as text_file:
         for key in log_map:
             sequence = " ".join(log_map[key])
             sequence += "\n"
@@ -33,7 +33,21 @@ def generate_key(date, time):
     return (date, int(time_arr[0]), int(time_arr[1]), int(float(time_arr[2])))
 
 if __name__=="__main__":
+    # Generate HDFS data for admin-basic, auth, and order services. 
+    template_file = "../anomalies_microservice_trainticket_version_configurations/ts-admin-basic-info-service-sprintstarterweb_1.5.22/LOGS_ts-admin-basic-info-service_springstarterweb_1.5.22.RELEASE.txt_templates.csv"
+    log_file = "../anomalies_microservice_trainticket_version_configurations/ts-admin-basic-info-service-sprintstarterweb_1.5.22/LOGS_ts-admin-basic-info-service_springstarterweb_1.5.22.RELEASE.txt_structured.csv"
+    destination_file = "./data/hdfs_logs_admin_basic"
+    generate_sequence_data(log_file, template_file, destination_file)
+
     template_file = "../anomalies_microservice_trainticket_version_configurations/ts-auth-mongo_4.4.15_2022-07-13/LOGS_ts-auth-service_3_Mongo:4.4.15.txt_templates.csv"
     log_file = "../anomalies_microservice_trainticket_version_configurations/ts-auth-mongo_4.4.15_2022-07-13/LOGS_ts-auth-service_3_Mongo:4.4.15.txt_structured.csv"
-    generate_sequence_data(log_file, template_file)
+    destination_file = "./data/hdfs_logs_auth"
+    generate_sequence_data(log_file, template_file, destination_file)
+
+    template_file = "../anomalies_microservice_trainticket_version_configurations/ts-order-service_mongodb_4.2.2_2022-07-12/LOGS_ts-order-service_mongodb_4.2.2.txt_templates.csv"
+    log_file = "../anomalies_microservice_trainticket_version_configurations/ts-order-service_mongodb_4.2.2_2022-07-12/LOGS_ts-order-service_mongodb_4.2.2.txt_structured.csv"
+    destination_file = "./data/hdfs_logs_order"
+    generate_sequence_data(log_file, template_file, destination_file)
+
+    
     

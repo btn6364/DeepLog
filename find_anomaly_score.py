@@ -59,35 +59,39 @@ if __name__ == '__main__':
     model.load_state_dict(torch.load(model_path))
     model.eval()
     print('model_path: {}'.format(model_path))
-    test_abnormal_loader = generate('hdfs_logs')
-    # Test the model
-    start_time = time.time()
-    with torch.no_grad():
-        microservice_anomaly_scores = []
-        for line in test_abnormal_loader:
-            num_sequences = 0
-            num_abnormal_sequences = 0
-            for i in range(len(line) - window_size):
-                num_sequences += 1
 
-                seq = line[i:i + window_size]
-                label = line[i + window_size]
-                
-                seq = torch.tensor(seq, dtype=torch.float).view(-1, window_size, input_size).to(device)
-                label = torch.tensor(label).view(-1).to(device)
-                
-                output = model(seq)
-                predicted = torch.argsort(output, 1)[0][-num_candidates:] # TODO: Anomaly score?
-                if label not in predicted: # Abnormal sequence
-                    num_abnormal_sequences += 1
-            
-            # Compute the anomaly score for each log
-            anomaly_score = round(num_abnormal_sequences / num_sequences, 2)
-            microservice_anomaly_scores.append(anomaly_score)
-    
-    print(microservice_anomaly_scores)
-    microservice_mean_anomaly_score = round(statistics.mean(microservice_anomaly_scores), 3)
-    print(f"Microservice Anomaly Score = {microservice_mean_anomaly_score}")
+    # Generate the anomaly scores for 3 microservices
+    data_sources = [
+        "hdfs_logs_admin_basic", 
+        "hdfs_logs_auth",
+        "hdfs_logs_order"
+    ]
 
-    elapsed_time = time.time() - start_time
-    print('elapsed_time: {:.3f}s'.format(elapsed_time))
+    for data_source in data_sources:
+        test_abnormal_loader = generate(data_source)
+        # Test the model
+        with torch.no_grad():
+            microservice_anomaly_scores = []
+            for line in test_abnormal_loader:
+                num_sequences = 0
+                num_abnormal_sequences = 0
+                for i in range(len(line) - window_size):
+                    num_sequences += 1
+
+                    seq = line[i:i + window_size]
+                    label = line[i + window_size]
+                    
+                    seq = torch.tensor(seq, dtype=torch.float).view(-1, window_size, input_size).to(device)
+                    label = torch.tensor(label).view(-1).to(device)
+                    
+                    output = model(seq)
+                    predicted = torch.argsort(output, 1)[0][-num_candidates:] # TODO: Anomaly score?
+                    if label not in predicted: # Abnormal sequence
+                        num_abnormal_sequences += 1
+                
+                # Compute the anomaly score for each log
+                anomaly_score = round(num_abnormal_sequences / num_sequences, 2)
+                microservice_anomaly_scores.append(anomaly_score)
+        
+        microservice_mean_anomaly_score = round(statistics.mean(microservice_anomaly_scores), 3)
+        print(f"Microservice Anomaly Score = {microservice_mean_anomaly_score}")
